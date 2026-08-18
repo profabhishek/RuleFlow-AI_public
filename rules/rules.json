@@ -1,0 +1,186 @@
+{
+  "rules": [
+    {
+      "id": "kyc_reject_underage",
+      "description": "KYC: applicants must be at least 18 years old (legal requirement).",
+      "type": "conditional",
+      "category": "kyc",
+      "priority": 120,
+      "logic": "AND",
+      "conditions": [
+        { "field": "age", "operator": "lt", "value": 18 }
+      ],
+      "outcome": "REJECT",
+      "weight": -100,
+      "version": 1,
+      "enabled": true
+    },
+    {
+      "id": "kyc_reject_unverified_identity",
+      "description": "KYC: identity must be verified before any credit decision (AML/KYC compliance).",
+      "type": "conditional",
+      "category": "kyc",
+      "priority": 110,
+      "logic": "AND",
+      "conditions": [
+        { "field": "identity_verified", "operator": "is_false" }
+      ],
+      "outcome": "REJECT",
+      "weight": -100,
+      "version": 1,
+      "enabled": true
+    },
+    {
+      "id": "kyc_pass",
+      "description": "KYC: adult with verified identity clears the KYC gate.",
+      "type": "conditional",
+      "category": "kyc",
+      "priority": 10,
+      "logic": "AND",
+      "conditions": [
+        { "field": "age", "operator": "gte", "value": 18 },
+        { "field": "identity_verified", "operator": "is_true" }
+      ],
+      "outcome": "APPROVE",
+      "weight": 20,
+      "version": 1,
+      "enabled": true
+    },
+    {
+      "id": "fraud_reject_watchlist",
+      "description": "Fraud: applicants on a sanctions/fraud watchlist are always rejected.",
+      "type": "conditional",
+      "category": "fraud",
+      "priority": 115,
+      "logic": "AND",
+      "conditions": [
+        { "field": "on_watchlist", "operator": "is_true" }
+      ],
+      "outcome": "REJECT",
+      "weight": -100,
+      "version": 1,
+      "enabled": true
+    },
+    {
+      "id": "fraud_review_high_score",
+      "description": "Fraud: risk score above 70 routes to a human fraud analyst (never auto-approve).",
+      "type": "conditional",
+      "category": "fraud",
+      "priority": 90,
+      "logic": "AND",
+      "conditions": [
+        { "field": "fraud_score", "operator": "gt", "value": 70 }
+      ],
+      "outcome": "REVIEW",
+      "weight": -20,
+      "version": 1,
+      "enabled": true
+    },
+    {
+      "id": "fraud_pass",
+      "description": "Fraud: low risk score and not on any watchlist clears the fraud gate.",
+      "type": "conditional",
+      "category": "fraud",
+      "priority": 10,
+      "logic": "AND",
+      "conditions": [
+        { "field": "fraud_score", "operator": "lte", "value": 70 },
+        { "field": "on_watchlist", "operator": "is_false" }
+      ],
+      "outcome": "APPROVE",
+      "weight": 20,
+      "version": 1,
+      "enabled": true
+    },
+    {
+      "id": "uw_reject_poor_credit",
+      "description": "Underwriting: credit score below 580 is subprime — declined (standard FICO cutoff).",
+      "type": "conditional",
+      "category": "underwriting",
+      "priority": 100,
+      "logic": "AND",
+      "conditions": [
+        { "field": "credit_score", "operator": "lt", "value": 580 }
+      ],
+      "outcome": "REJECT",
+      "weight": -60,
+      "version": 1,
+      "enabled": true
+    },
+    {
+      "id": "uw_review_fair_credit",
+      "description": "Underwriting: fair credit (580-669) needs a manual underwriter look.",
+      "type": "conditional",
+      "category": "underwriting",
+      "priority": 80,
+      "logic": "AND",
+      "conditions": [
+        { "field": "credit_score", "operator": "between", "value": [580, 669] }
+      ],
+      "outcome": "REVIEW",
+      "weight": 10,
+      "version": 1,
+      "enabled": true
+    },
+    {
+      "id": "uw_approve_good_credit",
+      "description": "Underwriting: credit score 670+ is good credit — clears underwriting.",
+      "type": "conditional",
+      "category": "underwriting",
+      "priority": 20,
+      "logic": "AND",
+      "conditions": [
+        { "field": "credit_score", "operator": "gte", "value": 670 }
+      ],
+      "outcome": "APPROVE",
+      "weight": 40,
+      "version": 1,
+      "enabled": true
+    },
+    {
+      "id": "afford_reject_high_dti",
+      "description": "Affordability: debt-to-income above 43% fails the qualified-mortgage rule.",
+      "type": "conditional",
+      "category": "affordability",
+      "priority": 100,
+      "logic": "AND",
+      "conditions": [
+        { "field": "dti", "operator": "gt", "value": 43 }
+      ],
+      "outcome": "REJECT",
+      "weight": -50,
+      "version": 1,
+      "enabled": true
+    },
+    {
+      "id": "afford_review_borderline_dti",
+      "description": "Affordability: DTI 36-43% is borderline — manual affordability review.",
+      "type": "conditional",
+      "category": "affordability",
+      "priority": 80,
+      "logic": "AND",
+      "conditions": [
+        { "field": "dti", "operator": "between", "value": [36, 43] }
+      ],
+      "outcome": "REVIEW",
+      "weight": 5,
+      "version": 1,
+      "enabled": true
+    },
+    {
+      "id": "afford_approve_healthy_dti",
+      "description": "Affordability: DTI under 36% is comfortably affordable — clears the gate.",
+      "type": "conditional",
+      "category": "affordability",
+      "priority": 20,
+      "logic": "AND",
+      "conditions": [
+        { "field": "dti", "operator": "lt", "value": 36 }
+      ],
+      "outcome": "APPROVE",
+      "weight": 35,
+      "version": 1,
+      "enabled": true
+    }
+  ]
+}

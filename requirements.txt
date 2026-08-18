@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+pydantic>=2
+pydantic-settings
+google-genai
+openai
+sqlalchemy
+pytest
+httpx2
+ruff
+black

@@ -1,0 +1,41 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Git
+.git/
+.gitignore
+
+# GitHub
+.github/
+
+# IDE settings
+.vscode/
+.idea/
+
+# Test cache
+.pytest_cache/
+.mypy_cache/
+
+# Environment files
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Runtime data
+data/
+
+# SQLite databases
+*.db
+*.sqlite3
+
+# Tests
+tests/

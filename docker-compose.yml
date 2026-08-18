@@ -1,0 +1,18 @@
+services:
+  app:
+    container_name: ruleflow-ai
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - ./data:/app/data
+
+    env_file:
+      - .env.example
+
+    restart: unless-stopped

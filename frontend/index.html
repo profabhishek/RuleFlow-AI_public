@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<!-- ============================================================
+     FILE   : frontend/index.html
+     OWNER  : Frontend (Abhishek)
+     PURPOSE: App shell — sidebar nav, three views, modals, toasts.
+     No build step: open via any static server (see frontend/README).
+     ============================================================ -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RuleFlow-AI — Decision Automation</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- ============ Sidebar ============ -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">R</div>
+        <div>
+          <div class="brand-name">RuleFlow-AI</div>
+          <div class="brand-sub">Decision Automation</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="#dashboard" class="nav-link" data-view="dashboard">
+          <span class="nav-icon">▦</span> Dashboard
+        </a>
+        <a href="#rules" class="nav-link" data-view="rules">
+          <span class="nav-icon">☰</span> Rules
+        </a>
+        <a href="#playground" class="nav-link" data-view="playground">
+          <span class="nav-icon">▶</span> Playground
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div id="health-pill" class="health-pill checking">
+          <span class="dot"></span><span id="health-text">Checking API…</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ============ Main ============ -->
+    <main class="main">
+
+      <!-- ===== Dashboard ===== -->
+      <section id="view-dashboard" class="view">
+        <header class="page-head">
+          <h1>Dashboard</h1>
+          <p class="muted">Configurable decision automation — rules as data, decisions with receipts.</p>
+        </header>
+        <div class="stat-row">
+          <div class="stat-card">
+            <div class="stat-value" id="stat-rule-count">–</div>
+            <div class="stat-label">Active rules</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-enabled-count">–</div>
+            <div class="stat-label">Enabled</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">Priority</div>
+            <div class="stat-label">Decision mode</div>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="action-card" data-goto="rules" data-action="new-rule">
+            <span class="action-icon">＋</span>
+            <span class="action-title">New rule</span>
+            <span class="action-sub">Structured form or plain English</span>
+          </button>
+          <button class="action-card" data-goto="playground">
+            <span class="action-icon">▶</span>
+            <span class="action-title">Run a decision</span>
+            <span class="action-sub">See the verdict and exactly why</span>
+          </button>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <h2>Recent rules</h2>
+            <a href="#rules" class="link">View all →</a>
+          </div>
+          <div id="dash-rules" class="mini-list"><div class="skeleton-row"></div><div class="skeleton-row"></div><div class="skeleton-row"></div></div>
+        </div>
+      </section>
+
+      <!-- ===== Rules ===== -->
+      <section id="view-rules" class="view hidden">
+        <header class="page-head row-between">
+          <div>
+            <h1>Rules</h1>
+            <p class="muted">Business logic as data — no deploy needed to change it.</p>
+          </div>
+          <div class="btn-group">
+            <button id="btn-new-rule" class="btn primary">＋ Add rule</button>
+          </div>
+        </header>
+        <div class="card">
+          <div class="table-wrap">
+            <table class="table" id="rules-table">
+              <thead>
+                <tr>
+                  <th>ID</th><th>Description</th><th>Category</th><th>Outcome</th>
+                  <th class="num">Priority</th><th class="num">Weight</th>
+                  <th>Enabled</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="rules-tbody">
+                <tr><td colspan="8"><div class="skeleton-row"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="rules-empty" class="empty-state hidden">
+            <div class="empty-icon">☰</div>
+            <p>No rules yet.</p>
+            <button class="btn primary" data-action="new-rule">Create your first rule</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Playground ===== -->
+      <section id="view-playground" class="view hidden">
+        <header class="page-head">
+          <h1>Decision Playground</h1>
+          <p class="muted">Submit a request. Get a verdict — and the full reasoning behind it.</p>
+        </header>
+        <div class="playground-grid">
+          <!-- Input panel -->
+          <div class="card">
+            <div class="tabs">
+              <button class="tab" data-tab="structured">Fields</button>
+              <button class="tab active" data-tab="ai">Ask in English</button>
+            </div>
+            <div id="tab-structured" class="tab-panel hidden">
+              <p class="hint">Build the request object field by field.</p>
+              <div id="kv-rows"></div>
+              <button id="btn-add-field" class="btn ghost small">＋ Add field</button>
+              <div class="panel-actions panel-actions-split">
+                <button id="btn-run-decision" class="btn primary wide">Run decision ▶</button>
+                <button id="btn-run-gated" class="btn ghost wide" title="Run each rule category (kyc / fraud / underwriting / affordability) as an independent gate — every gate must clear.">Run gated ⛩</button>
+              </div>
+            </div>
+            <div id="tab-ai" class="tab-panel">
+              <p class="hint">Describe the scenario — AI extracts the fields.</p>
+              <textarea id="nl-query" rows="4" placeholder="e.g. A 35 year old applicant with credit_score 740 and income 90000"></textarea>
+              <div class="panel-actions">
+                <button id="btn-run-nl" class="btn accent wide">Ask ▶</button>
+              </div>
+              <div id="nl-extracted" class="extracted hidden"></div>
+            </div>
+          </div>
+          <!-- Result panel -->
+          <div class="card result-card">
+            <div id="result-empty" class="empty-state">
+              <div class="empty-icon">▶</div>
+              <p>Run a decision to see the verdict and its receipts.</p>
+            </div>
+            <div id="result-body" class="hidden">
+              <div class="verdict-row">
+                <div id="verdict-badge" class="verdict">–</div>
+                <div class="confidence">
+                  <div class="confidence-top"><span>Confidence</span><span id="confidence-num">–</span></div>
+                  <div class="confidence-bar"><div id="confidence-fill"></div></div>
+                </div>
+              </div>
+              <p id="result-explanation" class="explanation"></p>
+              <div id="result-score" class="score-line hidden"></div>
+              <h3 class="section-label">Rules fired</h3>
+              <div id="rules-fired"></div>
+              <h3 class="section-label">Rules that didn't match</h3>
+              <div id="rules-rejected"></div>
+            </div>
+            <!-- Gated result view: shown instead of #result-body when
+                 "Run gated" is used. Each category (kyc/fraud/underwriting/
+                 affordability) is evaluated as an independent gate; the
+                 final verdict is the worst outcome across all gates. -->
+            <div id="result-gated" class="hidden">
+              <div class="verdict-row">
+                <div id="gated-verdict-badge" class="verdict">–</div>
+                <p class="hint" style="margin:0">Worst-wins across every gate — clears only if <strong>all</strong> gates approve.</p>
+              </div>
+              <div id="gated-gates"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ============ Rule form slide-over ============ -->
+  <div id="overlay" class="overlay hidden">
+    <div class="slideover" role="dialog" aria-modal="true">
+      <div class="slideover-head">
+        <h2 id="form-title">New rule</h2>
+        <button id="btn-close-form" class="btn icon" aria-label="Close">✕</button>
+      </div>
+      <div class="slideover-body">
+        <!-- Mode tabs: describe it in English (default) or fill the fields in.
+             Hidden when editing an existing rule — there's nothing to author. -->
+        <div class="tabs" id="rule-mode-tabs">
+          <button type="button" class="tab active" data-rule-mode="ai">Ask in English</button>
+          <button type="button" class="tab" data-rule-mode="fields">Fields</button>
+        </div>
+        <!-- AI text entry (shown for 'from text' mode) -->
+        <div id="ai-entry" class="hidden">
+          <label class="field">
+            <span>Describe your rule in plain English</span>
+            <textarea id="ai-rule-text" rows="3" placeholder="e.g. Reject applicants under 18"></textarea>
+          </label>
+          <button id="btn-generate-rule" class="btn accent">🪄 Generate rule</button>
+          <div id="ai-raw-wrap" class="hidden">
+            <button class="disclosure" data-target="ai-raw">▸ Raw AI output</button>
+            <pre id="ai-raw" class="code hidden"></pre>
+          </div>
+          <!-- Shown only after generation (had a duplicate class attribute
+               that made it permanently visible; now driven from app.js). -->
+          <div id="ai-review-wrap" class="hidden">
+            <hr class="sep" />
+            <p class="hint">Review the generated rule below, adjust if needed, then save.</p>
+          </div>
+        </div>
+        <!-- Structured form -->
+        <form id="rule-form" autocomplete="off">
+          <div class="field-grid">
+            <label class="field">
+              <span>Rule ID <em>*</em></span>
+              <input type="text" id="f-id" placeholder="rule_reject_low_credit" required />
+            </label>
+            <label class="field">
+              <span>Outcome <em>*</em></span>
+              <input type="text" id="f-outcome" list="outcome-options" placeholder="APPROVE / REJECT / REVIEW" required />
+              <datalist id="outcome-options">
+                <option value="APPROVE"></option><option value="REJECT"></option><option value="REVIEW"></option>
+              </datalist>
+            </label>
+          </div>
+          <div class="field-grid">
+            <label class="field">
+              <span>Description</span>
+              <input type="text" id="f-description" placeholder="What this rule does, in one line" />
+            </label>
+            <label class="field">
+              <span>Category</span>
+              <input type="text" id="f-category" list="category-options" placeholder="general" />
+              <datalist id="category-options">
+                <option value="general"></option><option value="kyc"></option><option value="underwriting"></option><option value="fraud"></option><option value="affordability"></option>
+              </datalist>
+            </label>
+          </div>
+          <div class="field-grid three">
+            <label class="field">
+              <span>Logic</span>
+              <select id="f-logic"><option>AND</option><option>OR</option></select>
+            </label>
+            <label class="field">
+              <span>Priority</span>
+              <input type="number" id="f-priority" value="0" />
+            </label>
+            <label class="field">
+              <span>Weight</span>
+              <input type="number" id="f-weight" value="0" step="any" />
+            </label>
+          </div>
+          <label class="check-field">
+            <input type="checkbox" id="f-enabled" checked /> <span>Enabled</span>
+          </label>
+          <h3 class="section-label">Conditions <em>*</em></h3>
+          <div id="conditions-rows"></div>
+          <button type="button" id="btn-add-condition" class="btn ghost small">＋ Add condition</button>
+          <div id="form-error" class="form-error hidden"></div>
+          <button class="disclosure" type="button" data-target="json-preview">▸ JSON preview</button>
+          <pre id="json-preview" class="code hidden"></pre>
+        </form>
+      </div>
+      <div class="slideover-foot">
+        <button id="btn-cancel-form" class="btn ghost">Cancel</button>
+        <button id="btn-save-rule" class="btn primary">Save rule</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Duplicate / conflict confirmation ============ -->
+  <!-- Shown when the API reports an existing rule that matches exactly the
+       same requests. The user can inspect it and still choose to proceed. -->
+  <div id="dup-overlay" class="overlay hidden">
+    <div class="confirm-box wide" role="dialog" aria-modal="true">
+      <h3 id="dup-title">Similar rule already exists</h3>
+      <p id="dup-message" class="muted"></p>
+      <div id="dup-existing"></div>
+      <div class="confirm-actions">
+        <button id="btn-dup-cancel" class="btn ghost">Cancel</button>
+        <button id="btn-dup-proceed" class="btn primary">Create anyway</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Confirm delete ============ -->
+  <div id="confirm-overlay" class="overlay hidden">
+    <div class="confirm-box" role="dialog" aria-modal="true">
+      <h3>Delete rule?</h3>
+      <p id="confirm-text" class="muted"></p>
+      <div class="confirm-actions">
+        <button id="btn-confirm-cancel" class="btn ghost">Cancel</button>
+        <button id="btn-confirm-delete" class="btn danger">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toasts" class="toasts"></div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

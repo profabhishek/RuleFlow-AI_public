@@ -1,0 +1,50 @@
+# ============================================================
+# FILE   : render.yaml — Render Blueprint for the RuleFlow-AI backend
+# OWNER  : Infra (R4)
+# DEPLOY : In Render, New > Blueprint, connect this repo. Render reads this
+#          file, provisions the service, and asks for the secret env vars
+#          (those marked sync: false) in the dashboard.
+# ============================================================
+services:
+  - type: web
+    name: ruleflow-ai-api
+    runtime: python
+    plan: free
+    # Render injects $PORT — bind to it, not the hardcoded 8000 in the
+    # Dockerfile (this native-runtime path doesn't use the Dockerfile).
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.6"
+      - key: LOG_LEVEL
+        value: INFO
+
+      # NL layer. With keys set (below) this uses Gemini -> OpenRouter;
+      # with keys unset it degrades to the offline stub automatically.
+      - key: LLM_PROVIDER
+        value: gemini,openrouter
+      - key: LLM_MODEL
+        value: gemini-2.5-flash
+      - key: OPENROUTER_MODEL
+        value: meta-llama/llama-3.3-70b-instruct
+      # Secrets — set in the Render dashboard, never committed.
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+
+      # SQLite on Render's ephemeral filesystem: seed rules reload from
+      # rules/rules.json on every boot, but rules created via the API do
+      # NOT survive a redeploy/restart on the free plan. For durable rules,
+      # add a paid persistent disk (see below) and point DATABASE_URL at it.
+      - key: DATABASE_URL
+        value: sqlite:///./ruleflow.db
+
+    # Durable rules (paid plan): mount a disk and use the commented DB URL.
+    # disk:
+    #   name: ruleflow-data
+    #   mountPath: /var/data
+    #   sizeGB: 1
+    # then set DATABASE_URL: sqlite:////var/data/ruleflow.db

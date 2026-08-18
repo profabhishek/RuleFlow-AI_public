@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.db
+audit_log.jsonl
+.env
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+Role1CodeExplained.md
+FRONTEND_BLUEPRINT.md
